@@ -26,6 +26,16 @@ describe "test de chats" {
 		assert.throwsExceptionWithMessage("No se pudo enviar mensaje", {mensajeAlf.enviarseA(chatsito)})
 	
 	}
+	test "leer un chat te deja sin notificaciones"{
+		
+		mensaje.enviarseA(chatsito)
+		
+		assert.that(jorge.tieneNotificaciones())
+		
+		jorge.leer(chatsito)
+		
+		assert.notThat(jorge.tieneNotificaciones())
+	}
 	
 	
 

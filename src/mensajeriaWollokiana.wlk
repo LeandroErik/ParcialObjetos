@@ -40,7 +40,7 @@
 	
 	method contiene(texto) = emisor.tieneEnsuNombre(texto) or self.contenidosConTexto(texto) 
 	
-	method contenidosConTexto(texto) = contenidos.any({contenido => contenido.tiene(texto)})
+	method contenidosConTexto(texto) = contenidos.any({contenido => contenido.contiene(texto)})
  }
  
  /*------------------TIPOS CONTENIDOS----------------*/
@@ -106,7 +106,8 @@
  
  /*TIPOS DE CHATS*/
  
- /*ACA plantee que los chatsPremium heredan de los Chat (comunes) , opte por esta opcion mas qu todo porque decia el chat el chat premium tenia unos comportamientos extra que el comun no tenia*/
+ /*ACA plantee que los chatsPremium heredan de los Chat (comunes) , mas que todo opte por esta opcion mas qu todo porque decia
+  *  el chat el chat premium tenia unos comportamientos extra que el comun no tenia*/
 
  class Chat{
  	const participantes = []
@@ -130,6 +131,7 @@
 	}
 	
 	method enviarNotificacion(mensaje) =participantes.forEach({participante => participante.recibirNotificacion(mensaje)})
+	
 	method restarEspacio(mensaje) = participantes.forEach({participante => participante.restarEspacio(mensaje.peso())})
 	
 	method cantMensajes() = mensajes.size()
@@ -154,8 +156,8 @@
  	method agregarMiembro(participante){
  		participantes.add(participante)
  	}
- 	method eleiminarMiembro(participante){
- 		participante.remove(participante)
+ 	method eliminarMiembro(participante){
+ 		participantes.remove(participante)
  	}
  	method esCreador(alguien) = creador.es(alguien.nombre())
  }
@@ -193,17 +195,24 @@
  	
  	method es(nombrePersona) = nombre.equals(nombrePersona)
  	
- 	method buscarTexto(texto) = chats.contienenAlgunMensajeCon(texto)
+ 	method buscarTexto(texto) = chats.filter({chat => chat.contienenAlgunMensajeCon(texto)})
  	
  	method tieneEnsuNombre(texto) = nombre.contains(texto)
  	
- 	method mensajesMasPesadosdeCadaChat() =chats.map({chat =>chat.mensmensajeMasPesado()})
+ 	method mensajesMasPesadosdeCadaChat() =chats.map({chat =>chat.mensajeMasPesado()})
  	
- 	method leer(chat){
+ 	/*Al principio me lo platee asi ,pero nose si esta bien que la responsabilidad sea de la persona,filtrar los mensajes de ese chat
+ 	 * 
+ 	 method leer(chat){
  		self.notificacionesDel(chat).forEach({notificacion => notificacion.leer()})
  	}
  	method notificacionesDel(chat) = notificaciones.filter({notif => notif.perteneceA(chat)})
  	
+ 	 */
+ 	 
+ 	 method leer(chat){
+ 		notificaciones.forEach({notificacion => notificacion.leer(chat)})
+ 	}
  	method notificacionesSinLeer() = notificaciones.filter({notificacion => not notificacion.estaLeida()})
  	
  	method recibirNotificacion(mensajeRecibido){
@@ -213,7 +222,7 @@
  	method tieneNotificaciones() =  not self.notificacionesSinLeer().isEmpty()
  }
  
-// Notificaciones
+/*------NOTIFICACIONES---------*/
 
 class Notificacion{
 	var mensaje
@@ -221,11 +230,15 @@ class Notificacion{
 	
 	method estaLeida() = estaLeida
 	
-	method leer(){
+	method leer(chat){
+		if(self.perteneceA(chat)){
 			estaLeida = true
+		}
 	}
 	method perteneceA(chat) = chat.contiene(mensaje)
 }
+
+
 /*lo pense de otra manera si es que hay mas estados,pero como solo son 2 opte por los flags
  * esto iria en la clase notificacion -----> method estaLeida() = estado.leido() 
  object leida{
