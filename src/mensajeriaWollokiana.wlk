@@ -6,11 +6,11 @@
  * 
  * Punto 1:var chat = new Chat()    	y lo usamos con chat.cuantoEspacioOcupa()
  * Punto 2: var mensaje = new Mensaje(emisor = pepita,contenidos = [unTexto,unaFoto]))
- * Punto 3: 
- * Punto 4: 
- * Punto 5a: 
+ * Punto 3:  var usuario = new Persona()  ; persona.buscarTexto(unTexto)
+ * Punto 4: usuario.mensajesMasPesadosdeCadaChat()
+ * Punto 5a: usuario.tieneNotificaciones()
  * Punto 5b: 
- * Punto 5c:  
+ * Punto 5c:  usuario.notificacionesSinLeer()
  */
  
  class Mensaje{
@@ -19,13 +19,18 @@
  	var contenidos = []
  	
  	method peso() = 5 +self.pesoContenido() * 1.3
+ 	
 	method pesoContenido() = contenidos.sum({contenido => contenido.peso()})
 	
 	method enviarseA(chat){
-		if(not chat.puedeRecibir(self) or not emisor.tieneEspacio()){
+		self.validacion(chat)
+		chat.recibirMensaje(self)
+	}
+	
+	method validacion(chat){
+		if(not chat.puedeRecibir(self)){
 			self.error("No se pudo enviar mensaje")
 		}
-		chat.recibirMensaje(self)
 	}
 	method noSupera(valor) = self.peso() < valor
 	
@@ -36,7 +41,7 @@
  
  /*tipos de contenido*/
  class Texto{
- 	const contenido = []
+ 	const contenido
  	method cantCaracteres() = contenido.size()
  	method peso() = 1*self.cantCaracteres()
  	
@@ -45,14 +50,18 @@
  class Audio{
  	const duracion
  	method peso() = duracion *1.2
+ 	
+ 	method contiene(texto) = false
  }
  class Imagen{
  	var alto
- 	var ancho  //FALTAAAAA DEFINIR ALTO Y ANCHOOOOOOO
+ 	var ancho  
  	var modo
  	
  	method peso() = modo.compresion(self.pixeles()) * 2 //tranformo en KB
 	method pixeles() = alto * ancho
+	
+	method contiene(texto) = false
  }
  
  class GIF inherits Imagen{
@@ -63,8 +72,11 @@
  
  class Contacto{
  	var contacto //es una persona
+ 	
  	method peso() = 3
+ 	
  	method contiene(texto) = contacto.tieneEnsuNombre(texto)
+ 	
  }
  /*tipos de compresion*/
  object compresionOriginal{
@@ -87,17 +99,24 @@
  	const mensajes = []
  	
  	
- 	method cuantoEspacioOcupa() = mensaje.sum({mensaje => mensaje.peso()})
+ 	method cuantoEspacioOcupa() = mensajes.sum({mensaje => mensaje.peso()})
  	
- 	method puedeEnviar(mensaje) = self.contieneEmisor(mensaje) 
+ 	method puedeRecibir(mensaje) = self.contieneEmisor(mensaje) and self.todosTieneEspacio(mensaje)
+ 	
+ 	method todosTieneEspacio(mensaje) = participantes.all({participante =>participante.tieneEspacio(mensaje.peso())})
  	
 	method contieneEmisor(mensaje) = participantes.contains(mensaje.emisor())
 	
 	method recibirMensaje(mensaje){
-		mensajes.add(mensaje)
-		participantes.forEach({participante => participante.recibirNotificacion()})
 		
+		self.enviarNotificacion(mensaje)
+		self.restarEspacio(mensaje)
+		
+		mensajes.add(mensaje)
 	}
+	
+	method enviarNotificacion(mensaje) =participantes.forEach({participante => participante.recibirNotificacion(mensaje)})
+	method restarEspacio(mensaje) = participantes.forEach({participante => participante.restarEspacio(mensaje.peso())})
 	
 	method cantMensajes() = mensajes.size()
 	
@@ -107,6 +126,8 @@
 	
 	method mensajeMasPesado() =mensajes.max({mensaje => mensaje.peso()})
 	
+	method contiene(mensaje) = mensajes.contains(mensaje)
+	
 	
  }
  
@@ -114,7 +135,7 @@
  	var restriccion
  	var creador
  	
- 	override method puedeEnviar(mensaje) = super(mensaje) and restriccion.permiteEnviar(mensaje,self)
+ 	override method puedeRecibir(mensaje) = super(mensaje) and restriccion.permiteEnviar(mensaje,self)
  	
  	method agregarMiembro(participante){
  		participantes.add(participante)
@@ -145,12 +166,16 @@
  
  class Persona{
  	const nombre
- 	var espacio = 100
+ 	var espacio 
  	const chats = []
  	
  	const notificaciones = []
  	
- 	method tieneEspacio() = true
+ 	method tieneEspacio(peso) = espacio - peso > 0
+ 	
+ 	method restarEspacio(peso){
+ 		espacio -=peso
+ 	}
  	
  	method es(nombrePersona) = nombre.equals(nombrePersona)
  	
@@ -161,10 +186,38 @@
  	method mensajesMasPesadosdeCadaChat() =chats.map({chat =>chat.mensmensajeMasPesado()})
  	
  	method leer(chat){
- 		notificaciones.forEach({notificacion => notificacion.marcar(leida)})
+ 		self.notificacionesDel(chat).forEach({notificacion => notificacion.leer()})
  	}
- 	method notificacionesSinLeer() = notificaciones.map({notificacion => not notificacion.estaLeida()})
- 	method recibirNotificacion(){
- 		
+ 	method notificacionesDel(chat) = notificaciones.filter({notif => notif.perteneceA(chat)})
+ 	
+ 	method notificacionesSinLeer() = notificaciones.filter({notificacion => not notificacion.estaLeida()})
+ 	
+ 	method recibirNotificacion(mensajeRecibido){
+ 		notificaciones.add(new Notificacion(mensaje = mensajeRecibido,estaLeida = false))
  	}
+ 	
+ 	method tieneNotificaciones() =  not self.notificacionesSinLeer().isEmpty()
  }
+ 
+// Notificaciones
+
+class Notificacion{
+	var mensaje
+	var estaLeida = false
+	
+	method estaLeida() = estaLeida
+	
+	method leer(){
+			estaLeida = true
+	}
+	method perteneceA(chat) = chat.contiene(mensaje)
+}
+/*lo pense de otra manera si es que hay mas estados,pero como solo son 2 opte por los flags
+ * esto iria en la clase notificacion -----> method estaLeida() = estado.leido() 
+ object leida{
+	method leido() = true
+}
+object sinLeer{
+	method leido() = false
+}
+ */

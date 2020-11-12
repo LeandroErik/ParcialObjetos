@@ -1,9 +1,35 @@
 import mensajeriaWollokiana.*
 
-test "punto 1" {
+describe "punto 1" {
+	
+
+	
+	test "el peso de un chat" {
+		
 	var erik = new Persona(nombre = "erik",espacio = 1000,chats = [],notificaciones =[])
-	var jorge = new Persona(nombre = "erik",espacio = 1000,chats = [],notificaciones =[])
+	var jorge = new Persona(nombre = "jorge",espacio = 1000,chats = [],notificaciones =[])
+	var alf = new Persona(nombre = "alf",espacio = 1000,chats = [],notificaciones =[])
 	var texto = new Texto(contenido = "hola")
 	var mensaje =new Mensaje(emisor = erik ,contenidos = [texto])
-
+	var mensajeAlf =new Mensaje(emisor = alf ,contenidos = [texto])
+	
+	var chatsito = new Chat(participantes = [erik,jorge],mensajes = [mensaje])
+	
+		
+	assert.equals(chatsito.cuantoEspacioOcupa() ,10.2)
+	
+	mensaje.enviarseA(chatsito)
+	
+	assert.that(jorge.tieneNotificaciones())
+	
+	
+	
+	assert.throwsExceptionWithMessage("No se pudo enviar mensaje", {mensajeAlf.enviarseA(chatsito)})
+	
+	assert.equals(jorge.notificacionesSinLeer().size(),1)
+	
+	
+	}
+	
+	
 }
