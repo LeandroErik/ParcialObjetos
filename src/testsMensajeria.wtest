@@ -1,6 +1,9 @@
+import mensajeriaWollokiana.*
 
 test "punto 1" {
-
-	assert.that(false)
+	var erik = new Persona(nombre = "erik",espacio = 1000,chats = [],notificaciones =[])
+	var jorge = new Persona(nombre = "erik",espacio = 1000,chats = [],notificaciones =[])
+	var texto = new Texto(contenido = "hola")
+	var mensaje =new Mensaje(emisor = erik ,contenidos = [texto])
 
 }
