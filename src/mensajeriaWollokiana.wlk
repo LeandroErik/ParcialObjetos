@@ -5,7 +5,7 @@
  * Puntos de Entrada:
  * 
  * Punto 1:var chat = new Chat()    	y lo usamos con chat.cuantoEspacioOcupa()
- * Punto 2: var mensaje = new Mensaje(emisor = pepita,)
+ * Punto 2: var mensaje = new Mensaje(emisor = pepita,contenidos = [unTexto,unaFoto]))
  * Punto 3: 
  * Punto 4: 
  * Punto 5a: 
@@ -16,6 +16,7 @@
  class Mensaje{
  	const property emisor
  
+ 	var contenidos = []
  	
  	method peso() = 5 +self.pesoContenido() * 1.3
 	method pesoContenido() = contenidos.sum({contenido => contenido.peso()})
@@ -27,11 +28,19 @@
 		chat.recibirMensaje(self)
 	}
 	method noSupera(valor) = self.peso() < valor
+	
+	method contiene(texto) = emisor.tieneEnsuNombre(texto) or self.contenidosConTexto(texto) 
+	
+	method contenidosConTexto(texto) = contenidos.any({contenido => contenido.tiene(texto)})
  }
+ 
  /*tipos de contenido*/
  class Texto{
- 	const cantCacateres
- 	method peso() = 1*cantCacateres
+ 	const contenido = []
+ 	method cantCaracteres() = contenido.size()
+ 	method peso() = 1*self.cantCaracteres()
+ 	
+ 	method contiene(texto) = contenido.contains(texto)
  }
  class Audio{
  	const duracion
@@ -53,8 +62,9 @@
  }
  
  class Contacto{
- 	var contacto
+ 	var contacto //es una persona
  	method peso() = 3
+ 	method contiene(texto) = contacto.tieneEnsuNombre(texto)
  }
  /*tipos de compresion*/
  object compresionOriginal{
@@ -71,14 +81,11 @@
  }
  
  /*diseñanado chats*/
- 
- object Mensajeria{
- 	const chats = []
- }
- 
+
  class Chat{
  	const participantes = []
  	const mensajes = []
+ 	
  	
  	method cuantoEspacioOcupa() = mensaje.sum({mensaje => mensaje.peso()})
  	
@@ -88,11 +95,18 @@
 	
 	method recibirMensaje(mensaje){
 		mensajes.add(mensaje)
+		participantes.forEach({participante => participante.recibirNotificacion()})
+		
 	}
 	
 	method cantMensajes() = mensajes.size()
 	
 	method superaMensajes(valor) = self.cantMensajes() > valor
+	
+	method contienenAlgunMensajeCon(texto) = mensajes.any({mensaje => mensaje.contiene(texto)})
+	
+	method mensajeMasPesado() =mensajes.max({mensaje => mensaje.peso()})
+	
 	
  }
  
@@ -132,8 +146,25 @@
  class Persona{
  	const nombre
  	var espacio = 100
+ 	const chats = []
+ 	
+ 	const notificaciones = []
  	
  	method tieneEspacio() = true
  	
  	method es(nombrePersona) = nombre.equals(nombrePersona)
+ 	
+ 	method buscarTexto(texto) = chats.contienenAlgunMensajeCon(texto)
+ 	
+ 	method tieneEnsuNombre(texto) = nombre.contains(texto)
+ 	
+ 	method mensajesMasPesadosdeCadaChat() =chats.map({chat =>chat.mensmensajeMasPesado()})
+ 	
+ 	method leer(chat){
+ 		notificaciones.forEach({notificacion => notificacion.marcar(leida)})
+ 	}
+ 	method notificacionesSinLeer() = notificaciones.map({notificacion => not notificacion.estaLeida()})
+ 	method recibirNotificacion(){
+ 		
+ 	}
  }
