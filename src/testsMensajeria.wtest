@@ -1,35 +1,34 @@
 import mensajeriaWollokiana.*
 
-describe "punto 1" {
+describe "test de chats" {
+	const erik = new Persona(nombre = "erik",espacio = 1000,chats = [],notificaciones =[])
+	const jorge = new Persona(nombre = "jorge",espacio = 1000,chats = [],notificaciones =[])
+	const alf = new Persona(nombre = "alf",espacio = 1000,chats = [],notificaciones =[])
 	
+	const texto = new Texto(palabras = "hola")
+	
+	const mensaje =new Mensaje(emisor = erik ,contenidos = [texto])
+	const mensajeAlf =new Mensaje(emisor = alf ,contenidos = [texto])
+	
+	const chatsito = new Chat(participantes = [erik,jorge],mensajes = [mensaje])
 
 	
-	test "el peso de un chat" {
-		
-	var erik = new Persona(nombre = "erik",espacio = 1000,chats = [],notificaciones =[])
-	var jorge = new Persona(nombre = "jorge",espacio = 1000,chats = [],notificaciones =[])
-	var alf = new Persona(nombre = "alf",espacio = 1000,chats = [],notificaciones =[])
-	var texto = new Texto(contenido = "hola")
-	var mensaje =new Mensaje(emisor = erik ,contenidos = [texto])
-	var mensajeAlf =new Mensaje(emisor = alf ,contenidos = [texto])
-	
-	var chatsito = new Chat(participantes = [erik,jorge],mensajes = [mensaje])
-	
-		
-	assert.equals(chatsito.cuantoEspacioOcupa() ,10.2)
-	
-	mensaje.enviarseA(chatsito)
-	
-	assert.that(jorge.tieneNotificaciones())
-	
-	
-	
-	assert.throwsExceptionWithMessage("No se pudo enviar mensaje", {mensajeAlf.enviarseA(chatsito)})
-	
-	assert.equals(jorge.notificacionesSinLeer().size(),1)
-	
+	test "usuario que tiene notificaciones" {
+		mensaje.enviarseA(chatsito)
+		assert.that(jorge.tieneNotificaciones())
 	
 	}
+	test "cuanto ocupa un chat"	{
+		assert.equals(chatsito.cuantoEspacioOcupa() ,10.2)
+	}
+	test "mensaje que no se puedo enviar"{
+		
+		assert.throwsExceptionWithMessage("No se pudo enviar mensaje", {mensajeAlf.enviarseA(chatsito)})
+	
+	}
+	
+	
+
 	
 	
 }
