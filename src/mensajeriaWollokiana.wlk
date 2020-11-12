@@ -4,8 +4,8 @@
  * 
  * Puntos de Entrada:
  * 
- * Punto 1:
- * Punto 2: 
+ * Punto 1:var chat = new Chat()    	y lo usamos con chat.cuantoEspacioOcupa()
+ * Punto 2: var mensaje = new Mensaje(emisor = pepita,)
  * Punto 3: 
  * Punto 4: 
  * Punto 5a: 
@@ -15,19 +15,18 @@
  
  class Mensaje{
  	const property emisor
- 	var peso //en KB
- 	var contenidos = []
+ 
  	
  	method peso() = 5 +self.pesoContenido() * 1.3
 	method pesoContenido() = contenidos.sum({contenido => contenido.peso()})
 	
-	method enviarMensaje(chat){
+	method enviarseA(chat){
 		if(not chat.puedeRecibir(self) or not emisor.tieneEspacio()){
 			self.error("No se pudo enviar mensaje")
 		}
 		chat.recibirMensaje(self)
 	}
-
+	method noSupera(valor) = self.peso() < valor
  }
  /*tipos de contenido*/
  class Texto{
@@ -62,7 +61,7 @@
  	method compresion(pixeles) = pixeles
  }
  object compresionVariable{
- 	const procentajeAEnviar
+ 	var procentajeAEnviar
  	
  	method compresion(pixeles) = pixeles * procentajeAEnviar
  }
@@ -81,8 +80,6 @@
  	const participantes = []
  	const mensajes = []
  	
- 	var restriccion
- 	
  	method cuantoEspacioOcupa() = mensaje.sum({mensaje => mensaje.peso()})
  	
  	method puedeEnviar(mensaje) = self.contieneEmisor(mensaje) 
@@ -92,23 +89,51 @@
 	method recibirMensaje(mensaje){
 		mensajes.add(mensaje)
 	}
- 	
+	
+	method cantMensajes() = mensajes.size()
+	
+	method superaMensajes(valor) = self.cantMensajes() > valor
+	
  }
  
- class ChatPremium inherits Chat {
+ class ChatPremium inherits Chat{
+ 	var restriccion
+ 	var creador
  	
- 	const property creador
- 	method puedeEnviar(mensaje) = restriccion.cumple(mensaje,self)
+ 	override method puedeEnviar(mensaje) = super(mensaje) and restriccion.permiteEnviar(mensaje,self)
+ 	
+ 	method agregarMiembro(participante){
+ 		participantes.add(participante)
+ 	}
+ 	method eleiminarMiembro(participante){
+ 		participante.remove(participante)
+ 	}
+ 	method esCreador(alguien) = creador.es(alguien.nombre())
  }
  
- object difusion{
- 	method cumple(mensaje,creador) = creador.es(mensaje.emisor())
+ object difusion {
+ 	
+
+ 	 method permiteEnviar(mensaje,chat) = chat.esCreador(mensaje.emisor())
  }
+ object restringido{
+ 	var limitesMensajes
+ 	 method permiteEnviar(mensaje,chat) = chat.superaMensajes(limitesMensajes) 
+ }
+ object ahorro {
+ 	var pesoMaximo
+ 	 method permiteEnviar(mensaje,chat) =  mensaje.noSupera(pesoMaximo)
+ }
+ 
+
  
  /*PERSONA*/
  
  class Persona{
+ 	const nombre
  	var espacio = 100
  	
  	method tieneEspacio() = true
+ 	
+ 	method es(nombrePersona) = nombre.equals(nombrePersona)
  }
