@@ -4,12 +4,12 @@
  * 
  * Puntos de Entrada:
  * 
- * Punto 1:var chat = new Chat()    	y lo usamos con chat.cuantoEspacioOcupa()
+ * Punto 1:var chat =new Chat(participantes = [erik,jorge],mensajes = [mensaje]) y lo usamos con chat.cuantoEspacioOcupa()
  * Punto 2: var mensaje = new Mensaje(emisor = pepita,contenidos = [unTexto,unaFoto]))
  * Punto 3:  var usuario = new Persona()  ; persona.buscarTexto(unTexto)
  * Punto 4: usuario.mensajesMasPesadosdeCadaChat()
  * Punto 5a: usuario.tieneNotificaciones()
- * Punto 5b: 
+ * Punto 5b: usuario.leer(chat)
  * Punto 5c:  usuario.notificacionesSinLeer()
  */
  
@@ -18,7 +18,11 @@
  
  	var contenidos = []
  	
- 	method peso() = 5 +self.pesoContenido() * 1.3
+ 	method peso() = 5 + self.pesoContenido() * 1.3
+ 	
+ 	/*interprete que podria haber vario contenidos en un mensaje
+ 	 * otra solucion seria method pesoContenido()=contenido.peso()
+ 	 * */
  	
 	method pesoContenido() = contenidos.sum({contenido => contenido.peso()})
 	
@@ -39,31 +43,38 @@
 	method contenidosConTexto(texto) = contenidos.any({contenido => contenido.tiene(texto)})
  }
  
- /*tipos de contenido*/
+ /*------------------TIPOS CONTENIDOS----------------*/
+ /*Opte por usar la <Interfaz> contenido mas que todo porque no queria esta overrideando pro cada peso que tenia,ademas se podria haber usado herencia por el tema del metodo contiene(),pero no lo vi necesario*/
  class Texto{
- 	const contenido
- 	method cantCaracteres() = contenido.size()
- 	method peso() = 1*self.cantCaracteres()
+ 	const palabras
  	
- 	method contiene(texto) = contenido.contains(texto)
+ 	method cantCaracteres() = palabras.size()
+ 	
+ 	method peso() = 1* self.cantCaracteres()
+ 	
+ 	method contiene(texto) = palabras.contains(texto)
  }
+ 
  class Audio{
  	const duracion
+ 	
  	method peso() = duracion *1.2
  	
  	method contiene(texto) = false
  }
+ 
  class Imagen{
  	var alto
  	var ancho  
- 	var modo
+ 	var modo //modos de compresion
  	
  	method peso() = modo.compresion(self.pixeles()) * 2 //tranformo en KB
+ 	
 	method pixeles() = alto * ancho
 	
 	method contiene(texto) = false
  }
- 
+ /*hice que gif herede de imagen porque en el texto decia que eran como cualquier imagen ,pero se le agrega cant de cuadros */
  class GIF inherits Imagen{
  	var cantCuadros
  	
@@ -78,7 +89,8 @@
  	method contiene(texto) = contacto.tieneEnsuNombre(texto)
  	
  }
- /*tipos de compresion*/
+ /*------------TIPOS COMPRESION----------*/
+ 
  object compresionOriginal{
  	method compresion(pixeles) = pixeles
  }
@@ -92,7 +104,9 @@
  		
  }
  
- /*diseñanado chats*/
+ /*TIPOS DE CHATS*/
+ 
+ /*ACA plantee que los chatsPremium heredan de los Chat (comunes) , opte por esta opcion mas qu todo porque decia el chat el chat premium tenia unos comportamientos extra que el comun no tenia*/
 
  class Chat{
  	const participantes = []
