@@ -1,5 +1,5 @@
 
-test "tests" {
+test "punto 1" {
 
 	assert.that(false)
 
